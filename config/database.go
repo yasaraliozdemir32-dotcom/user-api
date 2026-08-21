@@ -13,10 +13,9 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(".env dosyasi yüklenemedi")
-	}
+	// Local bilgisayarda .env kullanılır.
+	// Render'da environment variables kullanılır.
+	_ = godotenv.Load()
 
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
