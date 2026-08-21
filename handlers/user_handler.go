@@ -62,7 +62,11 @@ func UpdateUser(c fiber.Ctx) error {
 		})
 	}
 
-	var updateData models.User
+	var updateData struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
 
 	if err := c.Bind().Body(&updateData); err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -70,14 +74,19 @@ func UpdateUser(c fiber.Ctx) error {
 		})
 	}
 
-	user.Name = updateData.Name
-	user.Email = updateData.Email
+	if updateData.Name != "" {
+		user.Name = updateData.Name
+	}
+
+	if updateData.Email != "" {
+		user.Email = updateData.Email
+	}
 
 	if updateData.Password != "" {
 		user.Password = updateData.Password
 	}
 
-	if err := service.UpdateUser(&user); err != nil {
+	if err := service.UpdateUser(&user, updateData.Password != ""); err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Kullanici guncellenemedi",
 		})

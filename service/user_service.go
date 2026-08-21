@@ -34,19 +34,22 @@ func GetUserByID(id string) (models.User, error) {
 	return repository.GetUserByID(id)
 }
 
-func UpdateUser(user *models.User) error {
-    hashedPassword, err := bcrypt.GenerateFromPassword(
-        []byte(user.Password),
-        bcrypt.DefaultCost,
-    )
+func UpdateUser(user *models.User, passwordChanged bool) error {
 
-    if err != nil {
-        return err
-    }
+	if passwordChanged {
+		hashedPassword, err := bcrypt.GenerateFromPassword(
+			[]byte(user.Password),
+			bcrypt.DefaultCost,
+		)
 
-    user.Password = string(hashedPassword)
+		if err != nil {
+			return err
+		}
 
-    return repository.UpdateUser(user)
+		user.Password = string(hashedPassword)
+	}
+
+	return repository.UpdateUser(user)
 }
 
 func DeleteUser(user *models.User) error {
