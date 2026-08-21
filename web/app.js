@@ -71,7 +71,8 @@ async function register() {
         );
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
         if (!response.ok) {
@@ -88,7 +89,9 @@ async function register() {
 
 
         document.getElementById("registerName").value = "";
+
         document.getElementById("registerEmail").value = "";
+
         document.getElementById("registerPassword").value = "";
 
 
@@ -155,7 +158,8 @@ async function login() {
         );
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
         if (!response.ok) {
@@ -167,7 +171,6 @@ async function login() {
         }
 
 
-        // JWT tokeni tarayicida sakla
         localStorage.setItem(
             "token",
             data.token
@@ -420,6 +423,8 @@ async function getFiles() {
                     ${file.file_name}
                 </strong>
 
+                <br>
+
                 Boyut:
                 ${file.file_size} byte
 
@@ -573,6 +578,507 @@ async function copyLink(link) {
         );
 
     }
+
+}
+
+
+// =====================================================
+// KULLANICI YONETIMI
+// =====================================================
+
+
+// =========================
+// KULLANICILARI GETIR
+// =========================
+
+async function getUsers() {
+
+    const token =
+        localStorage.getItem("token");
+
+
+    if (!token) {
+
+        alert(
+            "Once giris yapmalisin."
+        );
+
+        return;
+    }
+
+
+    const userList =
+        document.getElementById("userList");
+
+
+    userList.innerHTML =
+        "Kullanicilar yukleniyor...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/users`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const users =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            userList.innerHTML =
+                users.error ||
+                "Kullanicilar alinamadi.";
+
+            return;
+        }
+
+
+        if (!users || users.length === 0) {
+
+            userList.innerHTML =
+                "Kayitli kullanici bulunamadi.";
+
+            return;
+        }
+
+
+        userList.innerHTML = "";
+
+
+        users.forEach(user => {
+
+            const div =
+                document.createElement("div");
+
+
+            div.className =
+                "userItem";
+
+
+            div.innerHTML = `
+
+                <strong>
+                    ${user.name}
+                </strong>
+
+                <br>
+
+                E-posta:
+                ${user.email}
+
+                <br><br>
+
+                <button
+                    onclick="editUser(${user.id})"
+                >
+                    Guncelle
+                </button>
+
+                <button
+                    onclick="deleteUser(${user.id})"
+                >
+                    Sil
+                </button>
+
+                <hr>
+
+            `;
+
+
+            userList.appendChild(div);
+
+        });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        userList.innerHTML =
+            "Sunucuya baglanilamadi.";
+
+    }
+
+}
+
+
+// =========================
+// KULLANICI GETIR
+// =========================
+
+async function editUser(id) {
+
+    const token =
+        localStorage.getItem("token");
+
+
+    if (!token) {
+
+        alert(
+            "Once giris yapmalisin."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/users/${id}`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const user =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                user.error ||
+                "Kullanici alinamadi."
+            );
+
+            return;
+        }
+
+
+        document.getElementById(
+            "updateUserId"
+        ).value = user.id;
+
+
+        document.getElementById(
+            "updateUserName"
+        ).value = user.name || "";
+
+
+        document.getElementById(
+            "updateUserEmail"
+        ).value = user.email || "";
+
+
+        document.getElementById(
+            "updateUserPassword"
+        ).value = "";
+
+
+        document.getElementById(
+            "updateUserMessage"
+        ).innerText = "";
+
+
+        document.getElementById(
+            "updateUserBox"
+        ).classList.remove("hidden");
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        alert(
+            "Sunucuya baglanilamadi."
+        );
+
+    }
+
+}
+
+
+// =========================
+// KULLANICI GUNCELLE
+// =========================
+
+async function updateUser() {
+
+    const token =
+        localStorage.getItem("token");
+
+
+    if (!token) {
+
+        alert(
+            "Once giris yapmalisin."
+        );
+
+        return;
+    }
+
+
+    const id =
+        document.getElementById(
+            "updateUserId"
+        ).value;
+
+
+    const name =
+        document.getElementById(
+            "updateUserName"
+        ).value.trim();
+
+
+    const email =
+        document.getElementById(
+            "updateUserEmail"
+        ).value.trim();
+
+
+    const password =
+        document.getElementById(
+            "updateUserPassword"
+        ).value;
+
+
+    const message =
+        document.getElementById(
+            "updateUserMessage"
+        );
+
+
+    if (!id) {
+
+        message.innerText =
+            "Kullanici secilmedi.";
+
+        return;
+    }
+
+
+    if (!name || !email) {
+
+        message.innerText =
+            "Ad ve e-posta zorunludur.";
+
+        return;
+    }
+
+
+    const body = {
+        name: name,
+        email: email
+    };
+
+
+    if (password) {
+
+        body.password =
+            password;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/users/${id}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Authorization":
+                            `Bearer ${token}`
+                    },
+
+                    body:
+                        JSON.stringify(body)
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            message.innerText =
+                data.error ||
+                "Kullanici guncellenemedi.";
+
+            return;
+        }
+
+
+        message.innerText =
+            "Kullanici basariyla guncellendi.";
+
+
+        document.getElementById(
+            "updateUserPassword"
+        ).value = "";
+
+
+        getUsers();
+
+
+        setTimeout(() => {
+
+            cancelUpdate();
+
+        }, 1000);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        message.innerText =
+            "Sunucuya baglanilamadi.";
+
+    }
+
+}
+
+
+// =========================
+// KULLANICI SIL
+// =========================
+
+async function deleteUser(id) {
+
+    const token =
+        localStorage.getItem("token");
+
+
+    if (!token) {
+
+        alert(
+            "Once giris yapmalisin."
+        );
+
+        return;
+    }
+
+
+    const confirmDelete =
+        confirm(
+            "Bu kullaniciyi silmek istedigine emin misin?"
+        );
+
+
+    if (!confirmDelete) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/users/${id}`,
+                {
+                    method: "DELETE",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.error ||
+                "Kullanici silinemedi."
+            );
+
+            return;
+        }
+
+
+        alert(
+            data.message ||
+            "Kullanici basariyla silindi."
+        );
+
+
+        getUsers();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        alert(
+            "Sunucuya baglanilamadi."
+        );
+
+    }
+
+}
+
+
+// =========================
+// GUNCELLEME IPTAL
+// =========================
+
+function cancelUpdate() {
+
+    document.getElementById(
+        "updateUserBox"
+    ).classList.add("hidden");
+
+
+    document.getElementById(
+        "updateUserId"
+    ).value = "";
+
+
+    document.getElementById(
+        "updateUserName"
+    ).value = "";
+
+
+    document.getElementById(
+        "updateUserEmail"
+    ).value = "";
+
+
+    document.getElementById(
+        "updateUserPassword"
+    ).value = "";
+
+
+    document.getElementById(
+        "updateUserMessage"
+    ).innerText = "";
 
 }
 

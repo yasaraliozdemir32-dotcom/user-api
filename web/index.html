@@ -18,7 +18,10 @@
             FileTransfer
         </div>
 
-        <!-- GIRIS SAYFASI -->
+
+        <!-- =========================
+             GIRIS SAYFASI
+        ========================== -->
 
         <div id="loginPage" class="card">
 
@@ -45,11 +48,13 @@
             </button>
 
             <p class="switch">
+
                 Hesabin yok mu?
 
                 <span onclick="showRegister()">
                     Kayit Ol
                 </span>
+
             </p>
 
             <div id="loginMessage"></div>
@@ -57,7 +62,9 @@
         </div>
 
 
-        <!-- KAYIT SAYFASI -->
+        <!-- =========================
+             KAYIT SAYFASI
+        ========================== -->
 
         <div id="registerPage" class="card hidden">
 
@@ -90,11 +97,13 @@
             </button>
 
             <p class="switch">
+
                 Zaten hesabin var mi?
 
                 <span onclick="showLogin()">
                     Giris Yap
                 </span>
+
             </p>
 
             <div id="registerMessage"></div>
@@ -102,9 +111,14 @@
         </div>
 
 
-        <!-- DOSYA PANELI -->
+        <!-- =========================
+             DASHBOARD
+        ========================== -->
 
         <div id="dashboardPage" class="card hidden">
+
+
+            <!-- DASHBOARD BASLIK -->
 
             <div class="dashboardHeader">
 
@@ -128,7 +142,9 @@
             </div>
 
 
-            <!-- DOSYA YUKLEME -->
+            <!-- =========================
+                 DOSYA YUKLEME
+            ========================== -->
 
             <div class="uploadBox">
 
@@ -146,7 +162,9 @@
             </div>
 
 
-            <!-- DOSYA LISTESI -->
+            <!-- =========================
+                 DOSYA LISTESI
+            ========================== -->
 
             <h2>
                 Yukledigim Dosyalar
@@ -156,10 +174,91 @@
                 Henuz dosya yuklenmedi.
             </div>
 
+
+            <!-- =========================
+                 KULLANICI YONETIMI
+            ========================== -->
+
+            <h2>
+                Kullanici Yonetimi
+            </h2>
+
+            <button onclick="getUsers()">
+                Kullanicilari Goruntule
+            </button>
+
+
+            <!-- KULLANICI LISTESI -->
+
+            <div id="userList">
+
+                Kullanici listesi burada gorunecek.
+
+            </div>
+
+
+            <!-- =========================
+                 KULLANICI GUNCELLEME
+            ========================== -->
+
+            <div
+                id="updateUserBox"
+                class="hidden"
+            >
+
+                <h3>
+                    Kullanici Guncelle
+                </h3>
+
+
+                <input
+                    type="hidden"
+                    id="updateUserId"
+                >
+
+
+                <input
+                    type="text"
+                    id="updateUserName"
+                    placeholder="Ad Soyad"
+                >
+
+
+                <input
+                    type="email"
+                    id="updateUserEmail"
+                    placeholder="E-posta"
+                >
+
+
+                <input
+                    type="password"
+                    id="updateUserPassword"
+                    placeholder="Yeni sifre (bos birakilabilir)"
+                >
+
+
+                <button onclick="updateUser()">
+                    Guncelle
+                </button>
+
+
+                <button onclick="cancelUpdate()">
+                    Iptal
+                </button>
+
+
+                <div id="updateUserMessage"></div>
+
+            </div>
+
+
         </div>
 
     </div>
 
+
+    <!-- JAVASCRIPT -->
 
     <script src="app.js"></script>
 
