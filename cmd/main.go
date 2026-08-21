@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"user-api/config"
 	"user-api/models"
 	"user-api/routes"
@@ -24,5 +25,10 @@ func main() {
 		return c.SendString("API çalişiyor")
 	})
 
-	log.Fatal(app.Listen(":8082"))
+	port := os.Getenv("PORT")
+if port == "" {
+	port = "8082"
+}
+
+log.Fatal(app.Listen(":" + port))
 }
