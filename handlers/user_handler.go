@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"user-api/models"
 	"user-api/service"
 
@@ -143,5 +145,36 @@ func Login(c fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{
 		"message": "Giris basarili",
 		"token":   token,
+	})
+}
+
+// =========================
+// PROFIL
+// =========================
+
+func GetProfile(c fiber.Ctx) error {
+
+	userID, ok := c.Locals("userID").(uint)
+
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Kullanici kimligi bulunamadi",
+		})
+	}
+
+	user, err := service.GetUserByID(
+		fmt.Sprintf("%d", userID),
+	)
+
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Kullanici bulunamadi",
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"id":    user.ID,
+		"name":  user.Name,
+		"email": user.Email,
 	})
 }

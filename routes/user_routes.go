@@ -9,11 +9,14 @@ import (
 
 func UserRoutes(app *fiber.App) {
 
-	// Login açık
+	// Login acik
 	app.Post("/login", handlers.Login)
 
-	// Kullanıcı oluşturma açık
+	// Kullanici olusturma acik
 	app.Post("/users", handlers.CreateUser)
+
+	// Profil
+	app.Get("/profile", middleware.JWTProtected, handlers.GetProfile)
 
 	// Token gerekli
 	app.Get("/users", middleware.JWTProtected, handlers.GetAllUsers)
