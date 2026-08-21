@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FileTransfer</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="logo">
+            FileTransfer
+        </div>
+
+        <!-- GIRIS SAYFASI -->
+
+        <div id="loginPage" class="card">
+
+            <h1>Hos Geldin</h1>
+
+            <p>
+                Dosyalarini guvenli sekilde paylas.
+            </p>
+
+            <input
+                type="email"
+                id="loginEmail"
+                placeholder="E-posta"
+            >
+
+            <input
+                type="password"
+                id="loginPassword"
+                placeholder="Sifre"
+            >
+
+            <button onclick="login()">
+                Giris Yap
+            </button>
+
+            <p class="switch">
+                Hesabin yok mu?
+
+                <span onclick="showRegister()">
+                    Kayit Ol
+                </span>
+            </p>
+
+            <div id="loginMessage"></div>
+
+        </div>
+
+
+        <!-- KAYIT SAYFASI -->
+
+        <div id="registerPage" class="card hidden">
+
+            <h1>Hesap Olustur</h1>
+
+            <p>
+                Dosyalarini paylasmak icin kayit ol.
+            </p>
+
+            <input
+                type="text"
+                id="registerName"
+                placeholder="Ad Soyad"
+            >
+
+            <input
+                type="email"
+                id="registerEmail"
+                placeholder="E-posta"
+            >
+
+            <input
+                type="password"
+                id="registerPassword"
+                placeholder="Sifre"
+            >
+
+            <button onclick="register()">
+                Kayit Ol
+            </button>
+
+            <p class="switch">
+                Zaten hesabin var mi?
+
+                <span onclick="showLogin()">
+                    Giris Yap
+                </span>
+            </p>
+
+            <div id="registerMessage"></div>
+
+        </div>
+
+
+        <!-- DOSYA PANELI -->
+
+        <div id="dashboardPage" class="card hidden">
+
+            <div class="dashboardHeader">
+
+                <div>
+
+                    <h1>Dosyalarim</h1>
+
+                    <p>
+                        Dosyalarini yukle ve paylas.
+                    </p>
+
+                </div>
+
+                <button
+                    class="logout"
+                    onclick="logout()"
+                >
+                    Cikis
+                </button>
+
+            </div>
+
+
+            <!-- DOSYA YUKLEME -->
+
+            <div class="uploadBox">
+
+                <input
+                    type="file"
+                    id="fileInput"
+                >
+
+                <button onclick="uploadFile()">
+                    Dosya Yukle
+                </button>
+
+                <div id="uploadMessage"></div>
+
+            </div>
+
+
+            <!-- DOSYA LISTESI -->
+
+            <h2>
+                Yukledigim Dosyalar
+            </h2>
+
+            <div id="fileList">
+                Henuz dosya yuklenmedi.
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
