@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"user-api/config"
@@ -44,6 +45,35 @@ func UploadFile(c fiber.Ctx) error {
 	if file.Size > maxFileSize {
 		return c.Status(413).JSON(fiber.Map{
 			"error": "Dosya boyutu 30 MB'dan buyuk olamaz",
+		})
+	}
+
+	// =================================================
+	// DOSYA TURU KONTROLU
+	// =================================================
+
+	allowedExtensions := map[string]bool{
+		".pdf":  true,
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".gif":  true,
+		".doc":  true,
+		".docx": true,
+		".xls":  true,
+		".xlsx": true,
+		".zip":  true,
+		".rar":  true,
+		".txt":  true,
+	}
+
+	extension := strings.ToLower(
+		filepath.Ext(file.Filename),
+	)
+
+	if !allowedExtensions[extension] {
+		return c.Status(415).JSON(fiber.Map{
+			"error": "Bu dosya turune izin verilmiyor",
 		})
 	}
 
@@ -93,8 +123,6 @@ func UploadFile(c fiber.Ctx) error {
 
 	if err := config.DB.Create(&newFile).Error; err != nil {
 
-		// Veritabani kaydi basarisiz olursa
-		// sunucuda kalan dosyayi sil
 		os.Remove(filePath)
 
 		return c.Status(500).JSON(fiber.Map{
@@ -132,31 +160,17 @@ func DownloadFile(c fiber.Ctx) error {
 		})
 	}
 
-	// =================================================
-	// LINK SURE KONTROLU
-	// =================================================
-
 	if time.Now().After(file.ExpiresAt) {
-
 		return c.Status(410).JSON(fiber.Map{
 			"error": "Dosya linkinin suresi dolmus",
 		})
 	}
 
-	// =================================================
-	// DOSYA VAR MI?
-	// =================================================
-
 	if _, err := os.Stat(file.FilePath); os.IsNotExist(err) {
-
 		return c.Status(404).JSON(fiber.Map{
 			"error": "Dosya sunucuda bulunamadi",
 		})
 	}
-
-	// =================================================
-	// DOSYAYI GONDER
-	// =================================================
 
 	return c.Download(
 		file.FilePath,
@@ -211,10 +225,6 @@ func DeleteFile(c fiber.Ctx) error {
 
 	var file models.File
 
-	// =================================================
-	// DOSYANIN KULLANICIYA AIT OLDUGUNU KONTROL ET
-	// =================================================
-
 	if err := config.DB.
 		Where("id = ? AND user_id = ?", id, userID).
 		First(&file).Error; err != nil {
@@ -224,10 +234,6 @@ func DeleteFile(c fiber.Ctx) error {
 		})
 	}
 
-	// =================================================
-	// FIZIKSEL DOSYAYI SIL
-	// =================================================
-
 	if err := os.Remove(file.FilePath); err != nil &&
 		!os.IsNotExist(err) {
 
@@ -236,20 +242,11 @@ func DeleteFile(c fiber.Ctx) error {
 		})
 	}
 
-	// =================================================
-	// VERITABANINDAN SIL
-	// =================================================
-
 	if err := config.DB.Delete(&file).Error; err != nil {
-
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Dosya bilgisi silinemedi",
 		})
 	}
-
-	// =================================================
-	// BASARILI
-	// =================================================
 
 	return c.Status(200).JSON(fiber.Map{
 		"message": "Dosya basariyla silindi",
