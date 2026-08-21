@@ -1,0 +1,677 @@
+﻿==================== cmd\main.go ====================
+package main
+
+import (
+	"log"
+	"user-api/config"
+	"user-api/models"
+	"user-api/routes"
+
+	"github.com/gofiber/fiber/v3"
+)
+
+func main() {
+	config.ConnectDB()
+	config.DB.AutoMigrate(
+	&models.User{},
+	&models.File{},
+)
+
+	app := fiber.New() 
+
+	routes.UserRoutes(app)
+
+	app.Get("/", func(c fiber.Ctx) error {
+		return c.SendString("API Ã§aliÅŸiyor")
+	})
+
+	log.Fatal(app.Listen(":8082"))
+}
+
+
+==================== config\database.go ====================
+package config
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func ConnectDB() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(".env dosyasi yÃ¼klenemedi")
+	}
+
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_SSLMODE"),
+	)
+
+	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Veritabanina baÄŸlanilamadi:", err)
+	}
+
+	DB = database
+	fmt.Println("PostgreSQL baÄŸlantisi baÅŸarili")
+}
+
+
+==================== handlers\file_handler.go ====================
+package handlers
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+
+	"user-api/config"
+	"user-api/models"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/google/uuid"
+)
+
+func UploadFile(c fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(uint)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Kullanici kimligi bulunamadi",
+		})
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Dosya bulunamadi",
+		})
+	}
+
+	if err := os.MkdirAll("uploads", 0755); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Uploads klasoru olusturulamadi",
+		})
+	}
+
+	token := uuid.New().String()
+
+	filePath := filepath.Join(
+		"uploads",
+		token+"_"+file.Filename,
+	)
+
+	if err := c.SaveFile(file, filePath); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Dosya kaydedilemedi",
+		})
+	}
+
+	newFile := models.File{
+		FileName:   file.Filename,
+		FilePath:   filePath,
+		FileSize:   file.Size,
+		ShareToken: token,
+		UserID:     userID,
+		ExpiresAt:  time.Now().Add(24 * time.Hour),
+	}
+
+	if err := config.DB.Create(&newFile).Error; err != nil {
+		os.Remove(filePath)
+
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Dosya bilgisi kaydedilemedi",
+		})
+	}
+
+	return c.Status(201).JSON(fiber.Map{
+		"message": "Dosya basariyla yuklendi",
+		"file":    newFile,
+		"link":    fmt.Sprintf("/download/%s", token),
+	})
+}
+
+func DownloadFile(c fiber.Ctx) error {
+	token := c.Params("token")
+
+	var file models.File
+
+	if err := config.DB.
+		Where("share_token = ?", token).
+		First(&file).Error; err != nil {
+
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Dosya bulunamadi",
+		})
+	}
+
+	if time.Now().After(file.ExpiresAt) {
+		return c.Status(410).JSON(fiber.Map{
+			"error": "Dosya linkinin suresi dolmus",
+		})
+	}
+
+	if _, err := os.Stat(file.FilePath); os.IsNotExist(err) {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Dosya sunucuda bulunamadi",
+		})
+	}
+
+	return c.Download(file.FilePath, file.FileName)
+}
+
+func GetMyFiles(c fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(uint)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Kullanici kimligi bulunamadi",
+		})
+	}
+
+	var files []models.File
+
+	if err := config.DB.
+		Where("user_id = ?", userID).
+		Order("created_at DESC").
+		Find(&files).Error; err != nil {
+
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Dosyalar getirilemedi",
+		})
+	}
+
+	return c.Status(200).JSON(files)
+}
+
+func DeleteFile(c fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(uint)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Kullanici kimligi bulunamadi",
+		})
+	}
+
+	id := c.Params("id")
+
+	var file models.File
+
+	if err := config.DB.
+		Where("id = ? AND user_id = ?", id, userID).
+		First(&file).Error; err != nil {
+
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Dosya bulunamadi",
+		})
+	}
+
+	if err := os.Remove(file.FilePath); err != nil && !os.IsNotExist(err) {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Dosya silinemedi",
+		})
+	}
+
+	if err := config.DB.Delete(&file).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Dosya bilgisi silinemedi",
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Dosya basariyla silindi",
+	})
+}
+
+
+==================== handlers\user_handler.go ====================
+package handlers
+
+import (
+	"user-api/models"
+	"user-api/service"
+
+	"github.com/gofiber/fiber/v3"
+)
+
+func CreateUser(c fiber.Ctx) error {
+	var user models.User
+
+	if err := c.Bind().Body(&user); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Gecersiz veri",
+		})
+	}
+
+	if err := service.CreateUser(&user); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Kullanici olusturulamadi",
+		})
+	}
+
+	return c.Status(201).JSON(user)
+}
+
+func GetAllUsers(c fiber.Ctx) error {
+	users, err := service.GetAllUsers()
+
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Kullanicilar getirilemedi",
+		})
+	}
+
+	return c.Status(200).JSON(users)
+}
+
+func GetUserByID(c fiber.Ctx) error {
+	id := c.Params("id")
+
+	user, err := service.GetUserByID(id)
+
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Kullanici bulunamadi",
+		})
+	}
+
+	return c.Status(200).JSON(user)
+}
+
+func UpdateUser(c fiber.Ctx) error {
+	id := c.Params("id")
+
+	user, err := service.GetUserByID(id)
+
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Kullanici bulunamadi",
+		})
+	}
+
+	var updateData models.User
+
+	if err := c.Bind().Body(&updateData); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Gecersiz veri",
+		})
+	}
+
+	user.Name = updateData.Name
+	user.Email = updateData.Email
+
+	if updateData.Password != "" {
+		user.Password = updateData.Password
+	}
+
+	if err := service.UpdateUser(&user); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Kullanici guncellenemedi",
+		})
+	}
+
+	return c.Status(200).JSON(user)
+}
+
+func DeleteUser(c fiber.Ctx) error {
+	id := c.Params("id")
+
+	user, err := service.GetUserByID(id)
+
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Kullanici bulunamadi",
+		})
+	}
+
+	if err := service.DeleteUser(&user); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Kullanici silinemedi",
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Kullanici basariyla silindi",
+	})
+}
+
+func Login(c fiber.Ctx) error {
+	var loginData struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.Bind().Body(&loginData); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Gecersiz veri",
+		})
+	}
+
+	token, err := service.Login(
+		loginData.Email,
+		loginData.Password,
+	)
+
+	if err != nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Email veya sifre hatali",
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Giris basarili",
+		"token":   token,
+	})
+}
+
+
+==================== middleware\auth.go ====================
+package middleware
+
+import (
+	"os"
+	"strings"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/golang-jwt/jwt/v5"
+)
+
+func JWTProtected(c fiber.Ctx) error {
+
+	authHeader := c.Get("Authorization")
+
+	if authHeader == "" {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Token gerekli",
+		})
+	}
+
+	parts := strings.Split(authHeader, " ")
+
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Gecersiz token",
+		})
+	}
+
+	tokenString := parts[1]
+
+	token, err := jwt.Parse(
+		tokenString,
+		func(token *jwt.Token) (interface{}, error) {
+
+			if token.Method != jwt.SigningMethodHS256 {
+				return nil, jwt.ErrSignatureInvalid
+			}
+
+			return []byte(os.Getenv("JWT_SECRET")), nil
+		},
+	)
+
+	if err != nil || !token.Valid {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Gecersiz veya suresi dolmus token",
+		})
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Token bilgileri okunamadi",
+		})
+	}
+
+	userID, ok := claims["user_id"].(float64)
+
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Token icinde kullanici bilgisi yok",
+		})
+	}
+
+	c.Locals("userID", uint(userID))
+
+	return c.Next()
+}
+
+
+==================== models\file.go ====================
+package models
+
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
+type File struct {
+	ID          uint           `json:"id" gorm:"primaryKey"`
+	FileName    string         `json:"file_name"`
+	FilePath    string         `json:"-"`
+	FileSize    int64          `json:"file_size"`
+	ShareToken  string         `json:"share_token"`
+	UserID      uint           `json:"user_id"`
+	ExpiresAt   time.Time      `json:"expires_at"`
+	CreatedAt   time.Time      `json:"created_at"`
+	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
+}
+
+
+==================== models\user.go ====================
+package models
+
+import "time"
+
+type User struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email" gorm:"unique"`
+	Password  string    `json:"password"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+
+==================== repository\user_repository.go ====================
+package repository
+
+import (
+	"user-api/config"
+	"user-api/models"
+)
+
+func CreateUser(user *models.User) error {
+	result := config.DB.Create(user)
+	return result.Error
+}
+
+func GetAllUsers() ([]models.User, error) {
+	var users []models.User
+
+	result := config.DB.Find(&users)
+
+	return users, result.Error
+}
+
+func GetUserByID(id string) (models.User, error) {
+	var user models.User
+
+	result := config.DB.First(&user, id)
+
+	return user, result.Error
+}
+
+func GetUserByEmail(email string) (models.User, error) {
+	var user models.User
+
+	result := config.DB.Where("email = ?", email).First(&user)
+
+	return user, result.Error
+}
+
+func UpdateUser(user *models.User) error {
+	result := config.DB.Save(user)
+	return result.Error
+}
+
+func DeleteUser(user *models.User) error {
+	result := config.DB.Delete(user)
+	return result.Error
+}
+
+
+==================== routes\user_routes.go ====================
+package routes
+
+import (
+	"user-api/handlers"
+	"user-api/middleware"
+
+	"github.com/gofiber/fiber/v3"
+)
+
+func UserRoutes(app *fiber.App) {
+
+	// Login aÃ§Ä±k
+	app.Post("/login", handlers.Login)
+
+	// KullanÄ±cÄ± oluÅŸturma aÃ§Ä±k
+	app.Post("/users", handlers.CreateUser)
+
+	// Token gerekli
+	app.Get("/users", middleware.JWTProtected, handlers.GetAllUsers)
+
+	app.Get("/users/:id", middleware.JWTProtected, handlers.GetUserByID)
+
+	app.Put("/users/:id", middleware.JWTProtected, handlers.UpdateUser)
+
+	app.Delete("/users/:id", middleware.JWTProtected, handlers.DeleteUser)
+
+	app.Get("/files", middleware.JWTProtected, handlers.GetMyFiles)
+
+	app.Delete("/files/:id", middleware.JWTProtected, handlers.DeleteFile)
+
+	// Dosya upload
+	app.Post("/upload", middleware.JWTProtected, handlers.UploadFile)
+
+	// Dosya download
+	app.Get("/download/:token", handlers.DownloadFile)
+}
+
+
+==================== service\user_service.go ====================
+package service
+
+import (
+	"os"
+	"time"
+
+	"user-api/models"
+	"user-api/repository"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
+)
+
+func CreateUser(user *models.User) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(user.Password),
+		bcrypt.DefaultCost,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(hashedPassword)
+
+	return repository.CreateUser(user)
+}
+
+func GetAllUsers() ([]models.User, error) {
+	return repository.GetAllUsers()
+}
+
+func GetUserByID(id string) (models.User, error) {
+	return repository.GetUserByID(id)
+}
+
+func UpdateUser(user *models.User) error {
+    hashedPassword, err := bcrypt.GenerateFromPassword(
+        []byte(user.Password),
+        bcrypt.DefaultCost,
+    )
+
+    if err != nil {
+        return err
+    }
+
+    user.Password = string(hashedPassword)
+
+    return repository.UpdateUser(user)
+}
+
+func DeleteUser(user *models.User) error {
+	return repository.DeleteUser(user)
+}
+
+func Login(email string, password string) (string, error) {
+
+	users, err := repository.GetAllUsers()
+
+	if err != nil {
+		return "", err
+	}
+
+	var user models.User
+
+	for _, u := range users {
+		if u.Email == email {
+			user = u
+			break
+		}
+	}
+
+	if user.ID == 0 {
+		return "", bcrypt.ErrMismatchedHashAndPassword
+	}
+
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(user.Password),
+		[]byte(password),
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	secret := os.Getenv("JWT_SECRET")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"email":   user.Email,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(secret))
+
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+
