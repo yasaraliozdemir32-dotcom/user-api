@@ -1,31 +1,65 @@
+/* =========================
+   TEMEL AYARLAR
+========================= */
+
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
     min-height: 100vh;
 
-    background:
-        radial-gradient(circle at top left, #dbeafe, transparent 35%),
-        radial-gradient(circle at bottom right, #e0e7ff, transparent 35%),
-        linear-gradient(135deg, #f8fafc, #eef2ff);
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
 
-    color: #172033;
+    color: #f8fafc;
+
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(59, 130, 246, 0.35),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 85% 80%,
+            rgba(139, 92, 246, 0.30),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #020617,
+            #0f172a 50%,
+            #111827
+        );
+
+    background-attachment: fixed;
 }
 
+
 /* =========================
-   ANA CONTAINER
+   ANA ALAN
 ========================= */
 
 .container {
     width: 100%;
-    max-width: 950px;
+    max-width: 900px;
+
     margin: 0 auto;
-    padding: 45px 20px;
+
+    padding: 50px 20px 80px;
 }
+
 
 /* =========================
    LOGO
@@ -39,83 +73,121 @@ body {
 
     letter-spacing: -1px;
 
-    color: #2563eb;
+    margin-bottom: 35px;
 
-    margin-bottom: 8px;
+    color: #ffffff;
+
+    text-shadow:
+        0 0 20px rgba(59, 130, 246, 0.35);
+
+    position: relative;
 }
 
-.siteSubtitle {
-    text-align: center;
+.logo::after {
+    content: "";
 
-    color: #64748b;
+    display: block;
 
-    font-size: 15px;
+    width: 55px;
+    height: 4px;
 
-    margin-bottom: 30px;
+    margin: 12px auto 0;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        90deg,
+        #3b82f6,
+        #8b5cf6
+    );
 }
+
 
 /* =========================
-   CARD
+   KART
 ========================= */
 
 .card {
-    background: rgba(255, 255, 255, 0.95);
-
     width: 100%;
 
-    max-width: 650px;
+    padding: 38px;
 
-    margin: 0 auto;
+    border-radius: 24px;
 
-    padding: 35px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30, 41, 59, 0.88),
+            rgba(15, 23, 42, 0.92)
+        );
 
-    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
 
     box-shadow:
-        0 20px 50px rgba(15, 23, 42, 0.10);
+        0 25px 70px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    backdrop-filter: blur(20px);
 }
+
 
 /* =========================
    BASLIKLAR
 ========================= */
 
 h1 {
-    font-size: 30px;
+    font-size: 31px;
+
+    font-weight: 750;
 
     margin-bottom: 10px;
 
-    color: #0f172a;
+    color: #ffffff;
 }
 
 h2 {
-    font-size: 21px;
+    font-size: 22px;
 
-    margin-top: 30px;
-    margin-bottom: 15px;
+    margin-top: 35px;
+    margin-bottom: 18px;
 
-    color: #1e293b;
+    color: #f8fafc;
 }
 
 h3 {
     font-size: 20px;
 
     margin-bottom: 18px;
-
-    color: #1e293b;
 }
 
 p {
-    color: #64748b;
+    color: #94a3b8;
 
     line-height: 1.6;
 
     margin-bottom: 20px;
 }
 
+
 /* =========================
-   INPUT
+   ALT BASLIK
+========================= */
+
+.subtitle {
+    color: #60a5fa;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    margin-top: -10px;
+
+    margin-bottom: 25px;
+}
+
+
+/* =========================
+   INPUTLAR
 ========================= */
 
 input[type="text"],
@@ -123,35 +195,43 @@ input[type="email"],
 input[type="password"] {
     width: 100%;
 
-    padding: 14px 16px;
+    height: 50px;
+
+    padding: 0 16px;
 
     margin-bottom: 14px;
 
-    border: 1px solid #dbe2ea;
+    border-radius: 12px;
 
-    border-radius: 10px;
-
-    background: #f8fafc;
-
-    color: #172033;
-
-    font-size: 15px;
+    border: 1px solid #334155;
 
     outline: none;
 
-    transition: 0.2s;
+    background: rgba(2, 6, 23, 0.75);
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    transition: all 0.25s ease;
+}
+
+input::placeholder {
+    color: #64748b;
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
-    border-color: #2563eb;
+    border-color: #3b82f6;
 
-    background: #ffffff;
+    background: rgba(2, 6, 23, 0.95);
 
     box-shadow:
-        0 0 0 3px rgba(37, 99, 235, 0.10);
+        0 0 0 3px rgba(59, 130, 246, 0.12),
+        0 0 20px rgba(59, 130, 246, 0.08);
 }
+
 
 /* =========================
    DOSYA INPUT
@@ -160,88 +240,119 @@ input[type="password"]:focus {
 input[type="file"] {
     width: 100%;
 
-    padding: 12px;
+    padding: 14px;
 
-    margin-bottom: 14px;
+    margin-bottom: 15px;
 
-    border: 1px dashed #94a3b8;
+    border-radius: 12px;
 
-    border-radius: 10px;
+    border: 1px dashed #475569;
 
-    background: #f8fafc;
+    background: rgba(2, 6, 23, 0.65);
 
-    color: #475569;
+    color: #cbd5e1;
 
     cursor: pointer;
 }
+
 
 /* =========================
    BUTON
 ========================= */
 
 button {
+    min-height: 46px;
+
+    padding: 0 20px;
+
     border: none;
 
-    border-radius: 10px;
+    border-radius: 11px;
 
-    padding: 13px 20px;
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #4f46e5
+        );
 
-    background: #2563eb;
+    color: #ffffff;
 
-    color: white;
+    font-size: 14px;
 
-    font-size: 15px;
-
-    font-weight: 600;
+    font-weight: 700;
 
     cursor: pointer;
 
     transition:
-        transform 0.15s,
-        background 0.15s,
-        box-shadow 0.15s;
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
 
-    margin-right: 7px;
+    margin-right: 8px;
 }
 
 button:hover {
-    background: #1d4ed8;
+    transform: translateY(-2px);
 
-    transform: translateY(-1px);
+    filter: brightness(1.08);
 
     box-shadow:
-        0 8px 18px rgba(37, 99, 235, 0.20);
+        0 10px 25px rgba(59, 130, 246, 0.28);
 }
 
 button:active {
     transform: translateY(0);
 }
 
+
 /* =========================
-   LOGIN / REGISTER SWITCH
+   CIKIS BUTONU
+========================= */
+
+.logout {
+    background:
+        linear-gradient(
+            135deg,
+            #dc2626,
+            #b91c1c
+        );
+}
+
+.logout:hover {
+    box-shadow:
+        0 10px 25px rgba(239, 68, 68, 0.25);
+}
+
+
+/* =========================
+   GIRIS / KAYIT LINKLERI
 ========================= */
 
 .switch {
     text-align: center;
 
-    margin-top: 20px;
+    margin-top: 22px;
 
     margin-bottom: 0;
 }
 
 .switch span {
-    color: #2563eb;
+    color: #60a5fa;
 
     font-weight: 700;
 
     cursor: pointer;
 
-    margin-left: 5px;
+    transition: 0.2s;
 }
 
 .switch span:hover {
+    color: #93c5fd;
+
     text-decoration: underline;
 }
+
 
 /* =========================
    MESAJLAR
@@ -251,15 +362,16 @@ button:active {
 #registerMessage,
 #uploadMessage,
 #updateUserMessage {
-    margin-top: 12px;
+    margin-top: 15px;
 
-    font-size: 14px;
+    color: #60a5fa;
 
     font-weight: 600;
 }
 
+
 /* =========================
-   DASHBOARD HEADER
+   DASHBOARD BASLIK
 ========================= */
 
 .dashboardHeader {
@@ -271,59 +383,28 @@ button:active {
 
     gap: 20px;
 
-    padding-bottom: 25px;
-
-    margin-bottom: 25px;
-
-    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 30px;
 }
 
-.dashboardHeader p {
-    margin-bottom: 0;
-}
 
 /* =========================
-   CIKIS BUTONU
-========================= */
-
-button.logout {
-    background: #ef4444;
-
-    flex-shrink: 0;
-}
-
-button.logout:hover {
-    background: #dc2626;
-
-    box-shadow:
-        0 8px 18px rgba(239, 68, 68, 0.20);
-}
-
-/* =========================
-   DOSYA YUKLEME
+   DOSYA YUKLEME ALANI
 ========================= */
 
 .uploadBox {
     padding: 25px;
 
-    background: #f8fafc;
+    border-radius: 17px;
 
-    border: 1px solid #e2e8f0;
+    background:
+        rgba(2, 6, 23, 0.45);
 
-    border-radius: 15px;
+    border: 1px solid #334155;
 
-    margin-bottom: 25px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.uploadBox h2 {
-    margin-top: 0;
-
-    margin-bottom: 8px;
-}
-
-.uploadBox p {
-    margin-bottom: 15px;
-}
 
 /* =========================
    DOSYA LISTESI
@@ -334,99 +415,111 @@ button.logout:hover {
 
     flex-direction: column;
 
-    gap: 12px;
+    gap: 14px;
 }
 
 .fileItem {
-    background: #ffffff;
+    padding: 20px;
 
-    border: 1px solid #e2e8f0;
+    border-radius: 16px;
 
-    border-radius: 13px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30, 41, 59, 0.8),
+            rgba(15, 23, 42, 0.9)
+        );
 
-    padding: 18px;
+    border: 1px solid #334155;
 
-    color: #64748b;
+    transition: all 0.25s ease;
+}
+
+.fileItem:hover {
+    transform: translateY(-3px);
+
+    border-color: #3b82f6;
 
     box-shadow:
-        0 5px 15px rgba(15, 23, 42, 0.04);
+        0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
 .fileItem strong {
-    display: block;
+    display: inline-block;
 
-    color: #0f172a;
+    color: #ffffff;
 
-    font-size: 16px;
+    font-size: 17px;
 
-    margin-bottom: 7px;
-
-    word-break: break-word;
+    margin-bottom: 8px;
 }
 
 .fileActions {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 8px;
-
-    margin-top: 15px;
+    margin-top: 16px;
 }
 
-.fileActions button {
-    margin-right: 0;
-}
 
 /* =========================
    KULLANICI LISTESI
 ========================= */
 
 #userList {
-    margin-top: 15px;
-
     display: flex;
 
     flex-direction: column;
 
-    gap: 12px;
+    gap: 14px;
+
+    margin-top: 20px;
 }
 
 .userItem {
-    background: #ffffff;
+    padding: 20px;
 
-    border: 1px solid #e2e8f0;
+    border-radius: 16px;
 
-    border-radius: 13px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30, 41, 59, 0.8),
+            rgba(15, 23, 42, 0.9)
+        );
 
-    padding: 18px;
+    border: 1px solid #334155;
 
-    color: #64748b;
+    transition: all 0.25s ease;
+}
+
+.userItem:hover {
+    transform: translateY(-3px);
+
+    border-color: #8b5cf6;
 
     box-shadow:
-        0 5px 15px rgba(15, 23, 42, 0.04);
+        0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
 .userItem strong {
     display: inline-block;
 
-    color: #0f172a;
+    color: #ffffff;
 
-    font-size: 17px;
+    font-size: 18px;
 
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .userItem hr {
     border: none;
 
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #334155;
 
-    margin-top: 16px;
+    margin-top: 18px;
 }
 
+
 /* =========================
-   GUNCELLEME PANELI
+   KULLANICI GUNCELLE
 ========================= */
 
 #updateUserBox {
@@ -434,48 +527,55 @@ button.logout:hover {
 
     padding: 25px;
 
-    background: #f8fafc;
+    border-radius: 17px;
 
-    border: 1px solid #dbeafe;
+    background:
+        rgba(2, 6, 23, 0.55);
 
-    border-radius: 15px;
+    border: 1px solid #475569;
 }
 
+
 /* =========================
-   GIZLEME
+   GIZLI ELEMENT
 ========================= */
 
 .hidden {
     display: none !important;
 }
 
+
 /* =========================
    MOBIL
 ========================= */
 
-@media (max-width: 650px) {
+@media (max-width: 600px) {
 
     .container {
-        padding: 25px 15px;
-    }
-
-    .logo {
-        font-size: 34px;
+        padding: 25px 14px 50px;
     }
 
     .card {
-        padding: 24px 18px;
+        padding: 25px 20px;
 
-        border-radius: 16px;
+        border-radius: 18px;
+    }
+
+    .logo {
+        font-size: 32px;
+    }
+
+    h1 {
+        font-size: 26px;
     }
 
     .dashboardHeader {
-        align-items: flex-start;
-
         flex-direction: column;
+
+        align-items: stretch;
     }
 
-    .dashboardHeader button {
+    .logout {
         width: 100%;
     }
 
@@ -484,11 +584,7 @@ button.logout:hover {
 
         margin-right: 0;
 
-        margin-bottom: 8px;
-    }
-
-    .fileActions {
-        flex-direction: column;
+        margin-bottom: 10px;
     }
 
     .fileActions button {
