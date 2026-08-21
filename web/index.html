@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>FileTransfer</title>
+    <title>DosyaPaylaş | Güvenli Dosya Transferi</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,8 +14,16 @@
 
     <div class="container">
 
+        <!-- =========================
+             SITE LOGOSU
+        ========================== -->
+
         <div class="logo">
-            FileTransfer
+            DosyaPaylaş
+        </div>
+
+        <div class="siteSubtitle">
+            Güvenli ve kolay dosya transferi
         </div>
 
 
@@ -25,10 +33,10 @@
 
         <div id="loginPage" class="card">
 
-            <h1>Hos Geldin</h1>
+            <h1>Hoş Geldin</h1>
 
             <p>
-                Dosyalarini guvenli sekilde paylas.
+                Dosyalarını güvenli şekilde paylaş.
             </p>
 
             <input
@@ -40,21 +48,19 @@
             <input
                 type="password"
                 id="loginPassword"
-                placeholder="Sifre"
+                placeholder="Şifre"
             >
 
             <button onclick="login()">
-                Giris Yap
+                Giriş Yap
             </button>
 
             <p class="switch">
-
-                Hesabin yok mu?
+                Hesabın yok mu?
 
                 <span onclick="showRegister()">
-                    Kayit Ol
+                    Kayıt Ol
                 </span>
-
             </p>
 
             <div id="loginMessage"></div>
@@ -68,10 +74,10 @@
 
         <div id="registerPage" class="card hidden">
 
-            <h1>Hesap Olustur</h1>
+            <h1>Hesap Oluştur</h1>
 
             <p>
-                Dosyalarini paylasmak icin kayit ol.
+                Dosyalarını paylaşmak için ücretsiz kayıt ol.
             </p>
 
             <input
@@ -89,21 +95,19 @@
             <input
                 type="password"
                 id="registerPassword"
-                placeholder="Sifre"
+                placeholder="Şifre"
             >
 
             <button onclick="register()">
-                Kayit Ol
+                Kayıt Ol
             </button>
 
             <p class="switch">
-
-                Zaten hesabin var mi?
+                Zaten hesabın var mı?
 
                 <span onclick="showLogin()">
-                    Giris Yap
+                    Giriş Yap
                 </span>
-
             </p>
 
             <div id="registerMessage"></div>
@@ -118,16 +122,16 @@
         <div id="dashboardPage" class="card hidden">
 
 
-            <!-- DASHBOARD BASLIK -->
+            <!-- DASHBOARD BAŞLIK -->
 
             <div class="dashboardHeader">
 
                 <div>
 
-                    <h1>Dosyalarim</h1>
+                    <h1>Dosyalarım</h1>
 
                     <p>
-                        Dosyalarini yukle ve paylas.
+                        Dosyalarını yükle, yönet ve paylaş.
                     </p>
 
                 </div>
@@ -136,17 +140,25 @@
                     class="logout"
                     onclick="logout()"
                 >
-                    Cikis
+                    Çıkış
                 </button>
 
             </div>
 
 
             <!-- =========================
-                 DOSYA YUKLEME
+                 DOSYA YÜKLEME
             ========================== -->
 
             <div class="uploadBox">
+
+                <h2>
+                    Dosya Yükle
+                </h2>
+
+                <p>
+                    Paylaşmak istediğin dosyayı seç.
+                </p>
 
                 <input
                     type="file"
@@ -154,7 +166,7 @@
                 >
 
                 <button onclick="uploadFile()">
-                    Dosya Yukle
+                    Dosya Yükle
                 </button>
 
                 <div id="uploadMessage"></div>
@@ -167,24 +179,24 @@
             ========================== -->
 
             <h2>
-                Yukledigim Dosyalar
+                Yüklediğim Dosyalar
             </h2>
 
             <div id="fileList">
-                Henuz dosya yuklenmedi.
+                Henüz dosya yüklenmedi.
             </div>
 
 
             <!-- =========================
-                 KULLANICI YONETIMI
+                 KULLANICI YÖNETİMİ
             ========================== -->
 
             <h2>
-                Kullanici Yonetimi
+                Kullanıcı Yönetimi
             </h2>
 
             <button onclick="getUsers()">
-                Kullanicilari Goruntule
+                Kullanıcıları Görüntüle
             </button>
 
 
@@ -192,13 +204,13 @@
 
             <div id="userList">
 
-                Kullanici listesi burada gorunecek.
+                Kullanıcı listesi burada görünecek.
 
             </div>
 
 
             <!-- =========================
-                 KULLANICI GUNCELLEME
+                 KULLANICI GÜNCELLEME
             ========================== -->
 
             <div
@@ -207,7 +219,7 @@
             >
 
                 <h3>
-                    Kullanici Guncelle
+                    Kullanıcı Güncelle
                 </h3>
 
 
@@ -234,17 +246,17 @@
                 <input
                     type="password"
                     id="updateUserPassword"
-                    placeholder="Yeni sifre (bos birakilabilir)"
+                    placeholder="Yeni şifre (boş bırakılabilir)"
                 >
 
 
                 <button onclick="updateUser()">
-                    Guncelle
+                    Güncelle
                 </button>
 
 
                 <button onclick="cancelUpdate()">
-                    Iptal
+                    İptal
                 </button>
 
 
@@ -258,7 +270,9 @@
     </div>
 
 
-    <!-- JAVASCRIPT -->
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
 
     <script src="app.js"></script>
 
